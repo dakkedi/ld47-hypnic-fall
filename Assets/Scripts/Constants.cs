@@ -10,6 +10,7 @@ class Constants : MonoBehaviour
 	public static readonly string Level = "Level";
 	public static readonly string Halo = "Halo";
 	public static readonly string Obstacle = "Obstacle";
+	public static readonly string Finish = "Finish";
 	#endregion
 
 }

@@ -43,8 +43,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dcc8c35c2fb83e48ac1a8d2c22ee2b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 0}
-  timeBoostPrefab: {fileID: 0}
-  groundPrefab: {fileID: 0}
-  playerSpawn: {fileID: 0}
-  collectedTimeBoost: 0
+  timeBoostPrefab: {fileID: 7146837817007648755, guid: 4852aca1901ae9247977fe79e2266e51,
+    type: 3}
+  groundPrefab: {fileID: 7306225379302401107, guid: 7eda8ebb66f7b8243988c0563077a236,
+    type: 3}
+  levelPrefab: {fileID: 2037587279905153950, guid: df6de94f3604722428242a7e68c588ce,
+    type: 3}
+  endgameCanvas: {fileID: 0}
+  finishCanvas: {fileID: 0}

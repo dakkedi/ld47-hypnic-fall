@@ -11,6 +11,10 @@ TagManager:
   - Ground
   - Level
   - Halo
+  - Swirl
+  - EndGame
+  - EndGameCanvas
+  - FinishCanvas
   layers:
   - Default
   - TransparentFX

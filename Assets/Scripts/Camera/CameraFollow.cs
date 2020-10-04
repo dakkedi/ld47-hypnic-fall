@@ -26,6 +26,7 @@ public class CameraFollow : MonoBehaviour
 
 	private void Update()
 	{
+		if (GameManager.instance.PlayerFinished) return;
 		FollowTarget();
 		LerpCameraSize();
 	}

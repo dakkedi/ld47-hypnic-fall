@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerBehavior : MonoBehaviour
@@ -16,9 +15,12 @@ public class PlayerBehavior : MonoBehaviour
 	private bool spaceDown;
 	private Transform playerHalo;
 	private Rigidbody2D rb;
-	private CapsuleCollider2D collider;
+#pragma warning disable CS0108 // Member hides inherited member; missing new keyword
+	private CapsuleCollider2D collider = null;
+#pragma warning restore CS0108 // Member hides inherited member; missing new keyword
 	private float defaultGravity;
 	private Animator anim;
+	private int maxBoostCapacity = 8;
 
 	public int CollectedBoost { get; private set; }
 
@@ -35,6 +37,8 @@ public class PlayerBehavior : MonoBehaviour
 
 	private void Update()
 	{
+		if (GameManager.instance.PlayerFinished) return;
+
 		spaceDown = Input.GetKeyDown(KeyCode.Space);
 
 		if (spaceDown && CollectedBoost > 0)
@@ -53,6 +57,7 @@ public class PlayerBehavior : MonoBehaviour
 	private void PlayerHitBoost(GameObject boostObject)
 	{
 		CollectedBoost++;
+		if (CollectedBoost > 8) CollectedBoost = maxBoostCapacity;
 		SetHaloSize();
 	}
 
@@ -62,7 +67,7 @@ public class PlayerBehavior : MonoBehaviour
 		var randomVector = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f));
 		rb.AddForce(randomVector * 3, ForceMode2D.Impulse);
 		CollectedBoost = CollectedBoost > 1 ? 1 : 0;
-		SetHaloSize();
+		ResetBoost();
 	}
 
 	/// <summary>
@@ -74,35 +79,30 @@ public class PlayerBehavior : MonoBehaviour
 		var currentBoostPower = CollectedBoost == 1 ? boostPower * 0.5f : boostPower;
 		var boost = currentBoostPower + (CollectedBoost * currentBoostPower * (CollectedBoost / boostPowerManipulator));
 		var newYPos = transform.position.y + boost;
+		
 
 		// Slow player down to a halt
-		Debug.Log(rb.velocity);
+		collider.enabled = false;
 		rb.gravityScale = 0;
-		Debug.Log(rb.velocity);
 		while (rb.velocity.y < -0.005)
 		{
 			rb.velocity = Vector2.Lerp(rb.velocity, Vector2.zero, .5f);
 			yield return new WaitForSeconds(0.1f);
 		}
+
 		ResetBoost();
-		// disable collision
-		collider.enabled = false;
 
 		// thrust player upwards
-		while (rb.velocity.y < 50)
-		{
-			rb.velocity = Vector2.Lerp(rb.velocity, Vector2.up * 50, .8f);
-			Debug.Log(rb.velocity);
-			yield return new WaitForFixedUpdate();
-		}
+		//rb.velocity = new Vector2(0, 60);
+		rb.AddForce(Vector2.up * 50, ForceMode2D.Impulse);
 
 		while (transform.position.y < newYPos)
 		{
 			// do nothing? 
-			yield return new WaitForFixedUpdate();
+			yield return new WaitForSeconds(0.025f);
 		}
 		rb.velocity = Vector2.zero;
-		transform.position = new Vector2(transform.position.x, newYPos);
+		//transform.position = new Vector2(transform.position.x, newYPos);
 
 		// activate collision
 		collider.enabled = true;
@@ -122,16 +122,13 @@ public class PlayerBehavior : MonoBehaviour
 		rb.gravityScale = defaultGravity;
 	}
 
-	private void OnCollisionEnter2D(Collision2D collision)
+	private void OnTriggerEnter2D(Collider2D collision)
 	{
 		if (collision.gameObject.tag == Constants.Ground)
 		{
 			GameManager.instance.PlayerHitGround();
 		}
-	}
 
-	private void OnTriggerEnter2D(Collider2D collision)
-	{
 		if (collision.gameObject.tag == Constants.TimeBoost)
 		{
 			PlayerHitBoost(collision.gameObject);
@@ -141,12 +138,16 @@ public class PlayerBehavior : MonoBehaviour
 		{
 			PlayerHitObstacle(collision.gameObject);
 		}
+
+		if (collision.gameObject.tag == Constants.Finish)
+		{
+			StartCoroutine(GameManager.instance.InitiatePlayerFinish());
+		}
 	}
 
-	public void ResetPlayer()
+	public void DeactivatePlayer()
 	{
-		ResetBoost();
-		SetHaloSize();
+		collider.enabled = false;
 	}
 
 	private void ResetBoost()
@@ -158,7 +159,7 @@ public class PlayerBehavior : MonoBehaviour
 	private void SetHaloSize()
 	{
 		var haloSize = CollectedBoost + (haloStartSize * haloStartSizeMultiplier);
-		if (haloSize > 8) haloSize = 8;
+		if (haloSize > maxBoostCapacity) haloSize = maxBoostCapacity;
 		playerHalo.localScale = new Vector2(haloSize, haloSize);
 	}
 }

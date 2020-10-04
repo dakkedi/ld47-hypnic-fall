@@ -10,6 +10,7 @@ public class PlayerMovement : MonoBehaviour
 	private float maxFallingVelocity = -10f;
 
 	private Vector2 movementInput;
+	private bool started;
 
 	public Rigidbody2D RB { get; private set; }
 	public float MaxFallingVelocity
@@ -24,6 +25,17 @@ public class PlayerMovement : MonoBehaviour
 
 	private void Update()
 	{
+		if (GameManager.instance.PlayerFinished) return;
+
+		if (!started && Input.GetButtonDown("Horizontal"))
+		{
+			SetStarted(true);
+		}
+		else if (!started)
+		{
+			// Player not yet moved
+			return;
+		}
 		movementInput = GetMovementInput();
 		CheckPlayerFallingVelocity();
 	}
@@ -51,5 +63,10 @@ public class PlayerMovement : MonoBehaviour
 		return snappyMovement ?
 			new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")) :
 			new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+	}
+
+	public void SetStarted(bool value)
+	{
+		started = value;
 	}
 }
