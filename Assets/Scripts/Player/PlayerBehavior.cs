@@ -16,7 +16,9 @@ public class PlayerBehavior : MonoBehaviour
 	private bool spaceDown;
 	private Transform playerHalo;
 	private Rigidbody2D rb;
+	private CapsuleCollider2D collider;
 	private float defaultGravity;
+	private Animator anim;
 
 	public int CollectedBoost { get; private set; }
 
@@ -25,7 +27,9 @@ public class PlayerBehavior : MonoBehaviour
 		ground = GameManager.instance.Ground;
 		playerHalo = Helper.FindComponentInChildWithTag<Transform>(gameObject, Constants.Halo);
 		rb = gameObject.GetComponent<Rigidbody2D>();
+		collider = gameObject.GetComponent<CapsuleCollider2D>();
 		defaultGravity = rb.gravityScale;
+		anim = gameObject.GetComponent<Animator>();
 		SetHaloSize();
 	}
 
@@ -35,8 +39,15 @@ public class PlayerBehavior : MonoBehaviour
 
 		if (spaceDown && CollectedBoost > 0)
 		{
-			ActivateBoost();
+			StartCoroutine(ActivateBoost());
 		}
+
+		CheckAnimation();
+	}
+
+	private void CheckAnimation()
+	{
+		anim.SetFloat("VelocityY", rb.velocity.y);
 	}
 
 	private void PlayerHitBoost(GameObject boostObject)
@@ -54,17 +65,54 @@ public class PlayerBehavior : MonoBehaviour
 		SetHaloSize();
 	}
 
-	private void ActivateBoost()
+	/// <summary>
+	/// Formula used 10+(x*10*(x/y))
+	/// </summary>
+	private IEnumerator ActivateBoost()
 	{
-		// 10+(x*10*(x/4))
 		// make sure one collected is not as strong.
 		var currentBoostPower = CollectedBoost == 1 ? boostPower * 0.5f : boostPower;
 		var boost = currentBoostPower + (CollectedBoost * currentBoostPower * (CollectedBoost / boostPowerManipulator));
 		var newYPos = transform.position.y + boost;
-		transform.position = new Vector2(transform.position.x, newYPos);
+
+		// Slow player down to a halt
+		Debug.Log(rb.velocity);
+		rb.gravityScale = 0;
+		Debug.Log(rb.velocity);
+		while (rb.velocity.y < -0.005)
+		{
+			rb.velocity = Vector2.Lerp(rb.velocity, Vector2.zero, .5f);
+			yield return new WaitForSeconds(0.1f);
+		}
 		ResetBoost();
-		StartCoroutine(CoyoteTime());
+		// disable collision
+		collider.enabled = false;
+
+		// thrust player upwards
+		while (rb.velocity.y < 50)
+		{
+			rb.velocity = Vector2.Lerp(rb.velocity, Vector2.up * 50, .8f);
+			Debug.Log(rb.velocity);
+			yield return new WaitForFixedUpdate();
+		}
+
+		while (transform.position.y < newYPos)
+		{
+			// do nothing? 
+			yield return new WaitForFixedUpdate();
+		}
+		rb.velocity = Vector2.zero;
+		transform.position = new Vector2(transform.position.x, newYPos);
+
+		// activate collision
+		collider.enabled = true;
+
+		// Coyote time
+		// StartCoroutine(CoyoteTime());
+		yield return new WaitForSeconds(1f);
+		rb.gravityScale = defaultGravity;
 	}
+
 
 	private IEnumerator CoyoteTime()
 	{
