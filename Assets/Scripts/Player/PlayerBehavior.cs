@@ -21,14 +21,21 @@ public class PlayerBehavior : MonoBehaviour
 	private float defaultGravity;
 	private Animator anim;
 	private int maxBoostCapacity = 8;
+	private AudioSource audio;
+	private ParticleSystem particles;
+	private float defaultShapeRadius;
 
 	public int CollectedBoost { get; private set; }
 
 	private void Start()
 	{
+		particles = GetComponentInChildren<ParticleSystem>();
+		var shape = particles.shape;
+		defaultShapeRadius = shape.radius;
 		ground = GameManager.instance.Ground;
 		playerHalo = Helper.FindComponentInChildWithTag<Transform>(gameObject, Constants.Halo);
 		rb = gameObject.GetComponent<Rigidbody2D>();
+		audio = GetComponent<AudioSource>();
 		collider = gameObject.GetComponent<CapsuleCollider2D>();
 		defaultGravity = rb.gravityScale;
 		anim = gameObject.GetComponent<Animator>();
@@ -56,13 +63,15 @@ public class PlayerBehavior : MonoBehaviour
 
 	private void PlayerHitBoost(GameObject boostObject)
 	{
+		if (CollectedBoost == maxBoostCapacity) return;
+		GameManager.instance.PlayAudioBoostPickup();
 		CollectedBoost++;
-		if (CollectedBoost > 8) CollectedBoost = maxBoostCapacity;
 		SetHaloSize();
 	}
 
 	private void PlayerHitObstacle(GameObject obstacle)
 	{
+		GameManager.instance.PlayAudioDamage();
 		rb.velocity = Vector2.zero;
 		var randomVector = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f));
 		rb.AddForce(randomVector * 3, ForceMode2D.Impulse);
@@ -84,29 +93,30 @@ public class PlayerBehavior : MonoBehaviour
 		// Slow player down to a halt
 		collider.enabled = false;
 		rb.gravityScale = 0;
+		GameManager.instance.PlayAudioImpulse();
 		while (rb.velocity.y < -0.005)
 		{
 			rb.velocity = Vector2.Lerp(rb.velocity, Vector2.zero, .5f);
-			yield return new WaitForSeconds(0.1f);
+			yield return new WaitForSeconds(0.05f);
 		}
 
 		ResetBoost();
-
 		// thrust player upwards
 		//rb.velocity = new Vector2(0, 60);
 		rb.AddForce(Vector2.up * 50, ForceMode2D.Impulse);
-
+		audio.Play();
 		while (transform.position.y < newYPos)
 		{
 			// do nothing? 
 			yield return new WaitForSeconds(0.025f);
 		}
+		audio.Stop();
 		rb.velocity = Vector2.zero;
 		//transform.position = new Vector2(transform.position.x, newYPos);
 
 		// activate collision
 		collider.enabled = true;
-
+		GameManager.instance.PlayAudioPlayerStop();
 		// Coyote time
 		// StartCoroutine(CoyoteTime());
 		yield return new WaitForSeconds(1f);
@@ -161,5 +171,9 @@ public class PlayerBehavior : MonoBehaviour
 		var haloSize = CollectedBoost + (haloStartSize * haloStartSizeMultiplier);
 		if (haloSize > maxBoostCapacity) haloSize = maxBoostCapacity;
 		playerHalo.localScale = new Vector2(haloSize, haloSize);
+		var emission = particles.emission;
+		emission.rateOverTime = 10 + (CollectedBoost * 3);
+		var shape = particles.shape;
+		shape.radius = defaultShapeRadius * CollectedBoost;
 	}
 }

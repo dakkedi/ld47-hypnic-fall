@@ -18,7 +18,18 @@ public class GameManager : MonoBehaviour
 	private GameObject endgameCanvas = null;
 	[SerializeField]
 	private GameObject finishCanvas = null;
-	
+
+	[SerializeField]
+	private AudioClip damagedSfx;
+	[SerializeField]
+	private AudioClip boostPickupSfx;
+	[SerializeField]
+	private AudioClip impulseSfx;
+	[SerializeField]
+	private AudioClip stoppingSfx;
+	[SerializeField]
+	private AudioClip playerStopSfx;
+
 	public GameObject Player { get; private set; }
 	public Transform PlayerSpawn { get; private set; }
 	public PlayerMovement PlayerMovement { get; private set; }
@@ -27,7 +38,8 @@ public class GameManager : MonoBehaviour
 	private GameObject level = null;
 	private PlayerBehavior playerBehavior;
 	private SpriteRenderer endScreenSprite;
-	
+
+	private AudioSource audio;
 
 	private void Awake()
 	{
@@ -41,6 +53,7 @@ public class GameManager : MonoBehaviour
 		Assert.IsNotNull(levelPrefab);
 		Assert.IsNotNull(endgameCanvas);
 		Assert.IsNotNull(finishCanvas);
+		Assert.IsNotNull(damagedSfx);
 	}
 	private void Start()
 	{
@@ -55,6 +68,7 @@ public class GameManager : MonoBehaviour
 		PlayerMovement = Player.GetComponent<PlayerMovement>();
 		endScreenSprite = Helper.FindComponentInChildWithTag<SpriteRenderer>(Camera.main.gameObject, "EndGame");
 		endScreenSprite.gameObject.SetActive(false);
+		audio = GetComponent<AudioSource>();
 	}
 	private void Update()
 	{
@@ -76,6 +90,7 @@ public class GameManager : MonoBehaviour
 
 	public void PlayerHitGround()
 	{
+		PlayAudioStopping();
 		StartCoroutine(GameEnd());
 	}
 
@@ -120,5 +135,30 @@ public class GameManager : MonoBehaviour
 			group.alpha = group.alpha + 0.1f;
 			yield return new WaitForSeconds(0.1f);
 		}
+	}
+
+	public void PlayAudioDamage()
+	{
+		audio.PlayOneShot(damagedSfx);
+	}
+
+	public void PlayAudioBoostPickup()
+	{
+		audio.PlayOneShot(boostPickupSfx);
+	}
+
+	public void PlayAudioImpulse()
+	{
+		audio.PlayOneShot(impulseSfx);
+	}
+
+	public void PlayAudioStopping()
+	{
+		audio.PlayOneShot(stoppingSfx);
+	}
+
+	public void PlayAudioPlayerStop()
+	{
+		audio.PlayOneShot(playerStopSfx);
 	}
 }
