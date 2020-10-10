@@ -56,6 +56,7 @@ public class PlayerMovement : MonoBehaviour
 	private void HandlePlayerHorizontal()
 	{
 		RB.velocity = new Vector2(movementInput.x * horizontalMoveSpeed, RB.velocity.y);
+		RB.position = new Vector2(Mathf.Clamp(RB.position.x, -4.2f, 4.2f), RB.position.y);
 	}
 
 	private Vector2 GetMovementInput()

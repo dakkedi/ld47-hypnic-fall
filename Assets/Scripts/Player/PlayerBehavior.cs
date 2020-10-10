@@ -82,13 +82,18 @@ public class PlayerBehavior : MonoBehaviour
 	/// <summary>
 	/// Formula used 10+(x*10*(x/y))
 	/// </summary>
+	private float CalculateBoost()
+	{
+		var currentBoostPower = CollectedBoost == 1 ? boostPower * 0.5f : boostPower;
+		var boost = currentBoostPower + (CollectedBoost * currentBoostPower * (CollectedBoost / boostPowerManipulator));
+		return boost;
+	}
+
 	private IEnumerator ActivateBoost()
 	{
 		// make sure one collected is not as strong.
-		var currentBoostPower = CollectedBoost == 1 ? boostPower * 0.5f : boostPower;
-		var boost = currentBoostPower + (CollectedBoost * currentBoostPower * (CollectedBoost / boostPowerManipulator));
+		var boost = CalculateBoost();
 		var newYPos = transform.position.y + boost;
-		
 
 		// Slow player down to a halt
 		collider.enabled = false;
@@ -102,7 +107,6 @@ public class PlayerBehavior : MonoBehaviour
 
 		ResetBoost();
 		// thrust player upwards
-		//rb.velocity = new Vector2(0, 60);
 		rb.AddForce(Vector2.up * 50, ForceMode2D.Impulse);
 		audio.Play();
 		while (transform.position.y < newYPos)
@@ -112,22 +116,11 @@ public class PlayerBehavior : MonoBehaviour
 		}
 		audio.Stop();
 		rb.velocity = Vector2.zero;
-		//transform.position = new Vector2(transform.position.x, newYPos);
 
 		// activate collision
 		collider.enabled = true;
 		GameManager.instance.PlayAudioPlayerStop();
-		// Coyote time
-		// StartCoroutine(CoyoteTime());
-		yield return new WaitForSeconds(1f);
-		rb.gravityScale = defaultGravity;
-	}
 
-
-	private IEnumerator CoyoteTime()
-	{
-		rb.gravityScale = 0.05f;
-		rb.velocity = Vector2.zero;
 		yield return new WaitForSeconds(1f);
 		rb.gravityScale = defaultGravity;
 	}
@@ -175,5 +168,8 @@ public class PlayerBehavior : MonoBehaviour
 		emission.rateOverTime = 10 + (CollectedBoost * 3);
 		var shape = particles.shape;
 		shape.radius = defaultShapeRadius * CollectedBoost;
+
+		// update ui
+		UIManager.Instance.SetCurrentBoost(CalculateBoost());
 	}
 }
