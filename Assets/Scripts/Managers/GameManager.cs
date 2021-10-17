@@ -7,18 +7,13 @@ public class GameManager : MonoBehaviour
 {
 	public static GameManager instance = null;
 
-	
-	[SerializeField]
-	private GameObject timeBoostPrefab = null;
-	[SerializeField]
-	private GameObject groundPrefab = null;
-	[SerializeField]
-	private GameObject levelPrefab = null;
+	[Header("Game state screens")]
 	[SerializeField]
 	private GameObject endgameCanvas = null;
 	[SerializeField]
 	private GameObject finishCanvas = null;
 
+	[Header("Audio clips")]
 	[SerializeField]
 	private AudioClip damagedSfx;
 	[SerializeField]
@@ -30,17 +25,23 @@ public class GameManager : MonoBehaviour
 	[SerializeField]
 	private AudioClip playerStopSfx;
 
+
+	// Not visible in the inspector // 
+
+	// Properties reachable by other classes.
+	// Public
 	public GameObject Player { get; private set; }
-	public Transform PlayerSpawn { get; private set; }
 	public PlayerMovement PlayerMovement { get; private set; }
 	public bool PlayerFinished { get; private set; }
 
-	private GameObject level = null;
+	// Private
 	private PlayerBehavior playerBehavior;
-	private SpriteRenderer endScreenSprite;
-
+	private SpriteRenderer endGameScreenSprite;
 	private AudioSource audio;
 
+	/// <summary>
+	/// Checks if this class already exists and if the properties are set from the inspector.
+	/// </summary>
 	private void Awake()
 	{
 		if (instance == null)
@@ -48,87 +49,129 @@ public class GameManager : MonoBehaviour
 		else if (instance != this)
 			Destroy(gameObject);
 
-		Assert.IsNotNull(timeBoostPrefab);
-		Assert.IsNotNull(groundPrefab);
-		Assert.IsNotNull(levelPrefab);
 		Assert.IsNotNull(endgameCanvas);
 		Assert.IsNotNull(finishCanvas);
 		Assert.IsNotNull(damagedSfx);
 	}
+
 	private void Start()
 	{
-		finishCanvas.gameObject.SetActive(false);
-		finishCanvas.GetComponent<CanvasGroup>().alpha = 0f;
-		endgameCanvas.gameObject.SetActive(false);
-		endgameCanvas.GetComponent<CanvasGroup>().alpha = 0f;
+		// Hide endgame and finish screens from start
+		HideCanvasScreen(finishCanvas);
+		HideCanvasScreen(endgameCanvas);
+
+		// Setting publics
 		Player = GameObject.FindGameObjectWithTag(Constants.Player);
-		PlayerSpawn = GameObject.FindGameObjectWithTag(Constants.Respawn).GetComponent<Transform>();
-		level = GameObject.FindGameObjectWithTag(Constants.Level);
-		playerBehavior = Player.GetComponent<PlayerBehavior>();
 		PlayerMovement = Player.GetComponent<PlayerMovement>();
-		endScreenSprite = Helper.FindComponentInChildWithTag<SpriteRenderer>(Camera.main.gameObject, "EndGame");
-		endScreenSprite.gameObject.SetActive(false);
+		
+		// Setting privates
+		playerBehavior = Player.GetComponent<PlayerBehavior>();
+		endGameScreenSprite = Helper.FindComponentInChildWithTag<SpriteRenderer>(Camera.main.gameObject, Constants.EndGame);
+		endGameScreenSprite.gameObject.SetActive(false);
 		audio = GetComponent<AudioSource>();
 	}
 	private void Update()
 	{
+		// Use R to reload the level scene
 		if (Input.GetKeyUp(KeyCode.R))
 		{
 			SceneManager.LoadScene("Level");
 		}
 
+		// Use esc to load start menu scene
 		if (Input.GetKeyUp(KeyCode.Escape))
 		{
 			SceneManager.LoadScene("Start");
 		}
 	}
 
-	public GameObject Ground
-	{
-		get { return groundPrefab; }
-	}
-
+	/// <summary>
+	/// Player hit the ground, initiate end game. (Game over)
+	/// </summary>
 	public void PlayerHitGround()
 	{
 		PlayAudioStopping();
 		StartCoroutine(GameEnd());
 	}
 
+	/// <summary>
+	/// Initiate end game animation and screen.
+	/// </summary>
+	/// <returns></returns>
 	private IEnumerator GameEnd()
 	{
-		endScreenSprite.color = new Color(endScreenSprite.color.r, endScreenSprite.color.g, endScreenSprite.color.b, 0);
-		endScreenSprite.gameObject.SetActive(true);
-		Player.SetActive(false);
-		while (endScreenSprite.color.a < 1)
+		// Sets end game sprite to active and alpha 0
+		endGameScreenSprite.color = new Color(endGameScreenSprite.color.r, endGameScreenSprite.color.g, endGameScreenSprite.color.b, 0);
+		endGameScreenSprite.gameObject.SetActive(true);
+
+		// Player died
+		SetPlayerActive(false);
+
+		// fade in end game sprite
+		while (endGameScreenSprite.color.a < 1)
 		{
-			endScreenSprite.color = new Color(endScreenSprite.color.r, endScreenSprite.color.g, endScreenSprite.color.b, endScreenSprite.color.a + .2f);
+			endGameScreenSprite.color = new Color(endGameScreenSprite.color.r, endGameScreenSprite.color.g, endGameScreenSprite.color.b, endGameScreenSprite.color.a + .2f);
 			yield return new WaitForSeconds(0.1f);
 		}
-		endgameCanvas.gameObject.SetActive(true);
-		var canvasGroup = endgameCanvas.GetComponent<CanvasGroup>();
-		StartCoroutine(FadeInFinishCanvas(canvasGroup));
+
+		// show end game screen
+		ActivateAndFadeinCanvasScreen(endgameCanvas);
 	}
 
-	private void ResetEndScreen()
+	/// <summary>
+	/// Activates and then fades in the canvas object
+	/// </summary>
+	/// <param name="canvas"></param>
+	private void ActivateAndFadeinCanvasScreen(GameObject canvas)
 	{
-		endScreenSprite.color = new Color(endScreenSprite.color.r, endScreenSprite.color.g, endScreenSprite.color.b, 0);
-		endScreenSprite.gameObject.SetActive(false);
+		// Activate canvas
+		canvas.gameObject.SetActive(true);
+		var canvasGroup = canvas.GetComponent<CanvasGroup>();
+		// Fade in canvas
+		StartCoroutine(FadeInCanvas(canvasGroup));
 	}
 
+	/// <summary>
+	/// Hides and sets alpha to 0 on canvas object
+	/// </summary>
+	/// <param name="canvas"></param>
+	private void HideCanvasScreen(GameObject canvas)
+	{
+		canvas.gameObject.SetActive(false);
+		canvas.GetComponent<CanvasGroup>().alpha = 0f;
+	}
+
+	/// <summary>
+	/// Sets player movement/animation when player finishes. Activates finish canvas screen.
+	/// </summary>
+	/// <returns></returns>
 	public IEnumerator InitiatePlayerFinish()
 	{
 		PlayerFinished = true;
 		PlayerMovement.RB.gravityScale = 0;
 		PlayerMovement.RB.AddForce(Vector2.up*50f, ForceMode2D.Impulse);
-		playerBehavior.DeactivatePlayer();
+		playerBehavior.DeactivatePlayerCollider();
 		yield return new WaitForSeconds(1f);
-		Player.SetActive(false);
-		finishCanvas.gameObject.SetActive(true);
-		var canvasGroup = finishCanvas.GetComponent<CanvasGroup>();
-		StartCoroutine(FadeInFinishCanvas(canvasGroup));
+		SetPlayerActive(false);
+
+		ActivateAndFadeinCanvasScreen(finishCanvas);
 	}
 
-	private IEnumerator FadeInFinishCanvas(CanvasGroup group)
+	/// <summary>
+	/// Sets "SetActive" on player gameobject
+	/// </summary>
+	/// <param name="state"></param>
+	private void SetPlayerActive(bool state)
+	{
+		Player.SetActive(state);
+	}
+
+	/// <summary>
+	/// Fades in canvas group
+	/// </summary>
+	/// <param name="group"></param>
+	/// <returns></returns>
+	private IEnumerator FadeInCanvas(CanvasGroup group)
 	{
 		while (group.alpha < 1f)
 		{
@@ -137,6 +180,9 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
+	// Audio can be placed in a different class?
+	// Can be made into one dynamic method? 
+	#region Play audio
 	public void PlayAudioDamage()
 	{
 		audio.PlayOneShot(damagedSfx);
@@ -161,4 +207,5 @@ public class GameManager : MonoBehaviour
 	{
 		audio.PlayOneShot(playerStopSfx);
 	}
+	#endregion
 }

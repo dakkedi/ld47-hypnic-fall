@@ -11,7 +11,6 @@ public class PlayerBehavior : MonoBehaviour
 	private float haloStartSize = 1f;
 	[SerializeField]
 	private float haloStartSizeMultiplier = 1.2f;
-	private GameObject ground;
 	private bool spaceDown;
 	private Transform playerHalo;
 	private Rigidbody2D rb;
@@ -32,7 +31,6 @@ public class PlayerBehavior : MonoBehaviour
 		particles = GetComponentInChildren<ParticleSystem>();
 		var shape = particles.shape;
 		defaultShapeRadius = shape.radius;
-		ground = GameManager.instance.Ground;
 		playerHalo = Helper.FindComponentInChildWithTag<Transform>(gameObject, Constants.Halo);
 		rb = gameObject.GetComponent<Rigidbody2D>();
 		audio = GetComponent<AudioSource>();
@@ -148,7 +146,10 @@ public class PlayerBehavior : MonoBehaviour
 		}
 	}
 
-	public void DeactivatePlayer()
+	/// <summary>
+	///  Deactivates the player collider 
+	/// </summary>
+	public void DeactivatePlayerCollider()
 	{
 		collider.enabled = false;
 	}

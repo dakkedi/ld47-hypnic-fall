@@ -681,9 +681,19 @@ PrefabInstance:
       objectReference: {fileID: 6926747306554174858}
     - target: {fileID: 7936059292240044785, guid: 19900e10a71c795448d1cc6d9cba1e7d,
         type: 3}
+      propertyPath: groundPrefab
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936059292240044785, guid: 19900e10a71c795448d1cc6d9cba1e7d,
+        type: 3}
       propertyPath: endgameCanvas
       value: 
       objectReference: {fileID: 1011574581}
+    - target: {fileID: 7936059292240044785, guid: 19900e10a71c795448d1cc6d9cba1e7d,
+        type: 3}
+      propertyPath: timeBoostPrefab
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8129685698144824320, guid: 19900e10a71c795448d1cc6d9cba1e7d,
         type: 3}
       propertyPath: m_RootOrder
