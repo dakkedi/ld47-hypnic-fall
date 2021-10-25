@@ -65,6 +65,8 @@ public class PlayerBehavior : MonoBehaviour
 		GameManager.instance.PlayAudioBoostPickup();
 		CollectedBoost++;
 		SetHaloSize();
+		// update ui
+		UIManager.Instance.SetCurrentBoostUI(CalculateBoost());
 	}
 
 	private void PlayerHitObstacle(GameObject obstacle)
@@ -158,6 +160,7 @@ public class PlayerBehavior : MonoBehaviour
 	{
 		CollectedBoost = 0;
 		SetHaloSize();
+		UIManager.Instance.ResetCurrentBoostUI();
 	}
 
 	private void SetHaloSize()
@@ -169,8 +172,5 @@ public class PlayerBehavior : MonoBehaviour
 		emission.rateOverTime = 10 + (CollectedBoost * 3);
 		var shape = particles.shape;
 		shape.radius = defaultShapeRadius * CollectedBoost;
-
-		// update ui
-		UIManager.Instance.SetCurrentBoost(CalculateBoost());
 	}
 }
