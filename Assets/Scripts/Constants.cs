@@ -2,7 +2,7 @@
 
 class Constants : MonoBehaviour
 {
-	#region Tags
+	// Tags
 	public static readonly string Player = "Player";
 	public static readonly string Ground = "Ground";
 	public static readonly string TimeBoost = "TimeBoost";
@@ -12,6 +12,7 @@ class Constants : MonoBehaviour
 	public static readonly string Obstacle = "Obstacle";
 	public static readonly string Finish = "Finish";
 	public static readonly string EndGame = "EndGame";
-	#endregion
 
+	// Animation
+	public static readonly string VelocityY = "VelocityY";
 }
