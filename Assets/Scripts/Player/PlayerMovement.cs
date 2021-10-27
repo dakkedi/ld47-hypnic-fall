@@ -2,42 +2,37 @@
 
 public class PlayerMovement : MonoBehaviour
 {
+	// Editable fields
+	[SerializeField, Range(1f, 10f)]
+	private float _horizontalMoveSpeed = 5f;
 	[SerializeField]
-	private float horizontalMoveSpeed = 5f;
-	[SerializeField]
-	private bool snappyMovement = false;
-	[SerializeField]
-	private float maxFallingVelocity = -10f;
+	private float _maxFallingVelocity = -10f;
 
-	private Vector2 movementInput;
-	private bool started;
+	// Privates
+	private Vector2 _movementInput;
+	private bool _started;
 
-	public Rigidbody2D RB { get; private set; }
-	public float MaxFallingVelocity
-	{
-		get { return maxFallingVelocity; }
-	}
+	// Publics
+	public Rigidbody2D PlayerRigidBody { get; private set; }
+	public float MaxFallingVelocity => _maxFallingVelocity;
 
 	private void Start()
 	{
-		RB = GetComponent<Rigidbody2D>();
+		PlayerRigidBody = gameObject.GetComponent<Rigidbody2D>();
 	}
 
 	private void Update()
 	{
 		if (GameManager.instance.PlayerFinished) return;
 
-		if (!started && Input.GetButtonDown("Horizontal"))
+		if (!_started)
 		{
-			SetStarted(true);
-		}
-		else if (!started)
-		{
-			// Player not yet moved
+			CheckPlayerInitialInput();
 			return;
 		}
-		movementInput = GetMovementInput();
-		CheckPlayerFallingVelocity();
+		
+		SetMovementInput();
+		CapPlayerFallingVelocity();
 	}
 
 	private void FixedUpdate()
@@ -45,29 +40,30 @@ public class PlayerMovement : MonoBehaviour
 		HandlePlayerHorizontal();
 	}
 
-	private void CheckPlayerFallingVelocity()
+	private void CheckPlayerInitialInput()
 	{
-		if (RB.velocity.y < maxFallingVelocity)
+		if (Input.GetButtonDown("Horizontal"))
 		{
-			RB.velocity = new Vector2(RB.velocity.x, maxFallingVelocity);
+			_started = true;
+		}
+	}
+
+	private void CapPlayerFallingVelocity()
+	{
+		if (PlayerRigidBody.velocity.y < _maxFallingVelocity)
+		{
+			PlayerRigidBody.velocity = new Vector2(PlayerRigidBody.velocity.x, _maxFallingVelocity);
 		}
 	}
 
 	private void HandlePlayerHorizontal()
 	{
-		RB.velocity = new Vector2(movementInput.x * horizontalMoveSpeed, RB.velocity.y);
-		RB.position = new Vector2(Mathf.Clamp(RB.position.x, -4.2f, 4.2f), RB.position.y);
+		PlayerRigidBody.velocity = new Vector2(_movementInput.x * _horizontalMoveSpeed, PlayerRigidBody.velocity.y);
+		PlayerRigidBody.position = new Vector2(Mathf.Clamp(PlayerRigidBody.position.x, -4.2f, 4.2f), PlayerRigidBody.position.y);
 	}
 
-	private Vector2 GetMovementInput()
+	private void  SetMovementInput()
 	{
-		return snappyMovement ?
-			new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")) :
-			new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-	}
-
-	public void SetStarted(bool value)
-	{
-		started = value;
+		_movementInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
 	}
 }

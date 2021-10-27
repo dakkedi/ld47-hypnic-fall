@@ -44,6 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dcc8c35c2fb83e48ac1a8d2c22ee2b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playerMovement: {fileID: 0}
   endgameCanvas: {fileID: 0}
   finishCanvas: {fileID: 0}
   damagedSfx: {fileID: 8300000, guid: 33c409ef070bf1b4b978d482c05192ac, type: 3}

@@ -7,6 +7,9 @@ public class GameManager : MonoBehaviour
 {
 	public static GameManager instance = null;
 
+	[SerializeField]
+	private PlayerMovement _playerMovement;
+
 	[Header("Game state screens")]
 	[SerializeField]
 	private GameObject endgameCanvas = null;
@@ -31,7 +34,7 @@ public class GameManager : MonoBehaviour
 	// Properties reachable by other classes.
 	// Public
 	public GameObject Player { get; private set; }
-	public PlayerMovement PlayerMovement { get; private set; }
+	public Rigidbody2D PlayerRigidBody { get; private set; }
 	public bool PlayerFinished { get; private set; }
 
 	// Private
@@ -52,6 +55,7 @@ public class GameManager : MonoBehaviour
 		Assert.IsNotNull(endgameCanvas);
 		Assert.IsNotNull(finishCanvas);
 		Assert.IsNotNull(damagedSfx);
+		Assert.IsNotNull(_playerMovement);
 	}
 
 	private void Start()
@@ -62,7 +66,7 @@ public class GameManager : MonoBehaviour
 
 		// Setting publics
 		Player = GameObject.FindGameObjectWithTag(Constants.Player);
-		PlayerMovement = Player.GetComponent<PlayerMovement>();
+		PlayerRigidBody = Player.GetComponent<Rigidbody2D>();
 		
 		// Setting privates
 		playerBehavior = Player.GetComponent<PlayerBehavior>();
@@ -84,6 +88,8 @@ public class GameManager : MonoBehaviour
 			SceneManager.LoadScene("Start");
 		}
 	}
+
+	public float PlayerMaxFallingVelocity => _playerMovement.MaxFallingVelocity;
 
 	/// <summary>
 	/// Player hit the ground, initiate end game. (Game over)
@@ -148,8 +154,8 @@ public class GameManager : MonoBehaviour
 	public IEnumerator InitiatePlayerFinish()
 	{
 		PlayerFinished = true;
-		PlayerMovement.RB.gravityScale = 0;
-		PlayerMovement.RB.AddForce(Vector2.up*50f, ForceMode2D.Impulse);
+		PlayerRigidBody.gravityScale = 0;
+		PlayerRigidBody.AddForce(Vector2.up*50f, ForceMode2D.Impulse);
 		playerBehavior.DeactivatePlayerCollider();
 		yield return new WaitForSeconds(1f);
 		SetPlayerActive(false);

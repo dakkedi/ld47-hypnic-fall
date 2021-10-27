@@ -5,7 +5,7 @@ public class CameraFollow : MonoBehaviour
 {
 	[SerializeField]
 	[Tooltip("Target for camera, usually the player")]
-	private Transform cameraTarget = null;
+	private GameObject cameraTarget = null;
 	[SerializeField]
 	[Tooltip("Value for smooth player follow")]
 	private float cameraFollowSmoothing = 5f;
@@ -25,10 +25,16 @@ public class CameraFollow : MonoBehaviour
 	/// Makes sure the scene is always infront of the camera.
 	/// </summary>
 	private float cameraOffsetZ = -10;
+	private Transform _playerTransform;
 
 	private void Awake()
 	{
 		Assert.IsNotNull(cameraTarget);
+	}
+
+	private void Start()
+	{
+		_playerTransform = cameraTarget.transform;
 	}
 
 	private void Update()
@@ -45,7 +51,7 @@ public class CameraFollow : MonoBehaviour
 		if (clampCameraValues)
 		{
 			// add y value to offset the camera to the player
-			var targetOffsetPosition = new Vector2(cameraTarget.position.x, cameraTarget.position.y - cameraAddedOffsetY);
+			var targetOffsetPosition = new Vector2(_playerTransform.position.x, _playerTransform.position.y - cameraAddedOffsetY);
 			// create transition vector to smoothly follow the player
 			Vector2 lerpVector2 = Vector2.Lerp(transform.position, targetOffsetPosition, cameraFollowSmoothing * Time.deltaTime);
 
@@ -57,7 +63,7 @@ public class CameraFollow : MonoBehaviour
 		else
 		{
 			// will strictly follow the target/player, funtional but not pretty. Work towards a better solution to the code above.
-			transform.position = new Vector3(0, cameraTarget.position.y - cameraAddedOffsetY, cameraOffsetZ);
+			transform.position = new Vector3(0, _playerTransform.position.y - cameraAddedOffsetY, cameraOffsetZ);
 		}
 	}
 
@@ -66,7 +72,7 @@ public class CameraFollow : MonoBehaviour
 	/// </summary>
 	private void LerpCameraSize()
 	{
-		var newSize = Mathf.Clamp(Mathf.Abs(GameManager.instance.PlayerMovement.RB.velocity.y), 5f, Mathf.Abs(GameManager.instance.PlayerMovement.MaxFallingVelocity));
+		var newSize = Mathf.Clamp(Mathf.Abs(GameManager.instance.PlayerRigidBody.velocity.y), 5f, Mathf.Abs(GameManager.instance.PlayerMaxFallingVelocity));
 		var smoothing = newSize > Camera.main.orthographicSize ? cameraSizeSmoothingIn : cameraSizeSmoothingOut; // have a faster smoothing if camera zooms in
 		Camera.main.orthographicSize = Mathf.Lerp(Camera.main.orthographicSize, newSize, smoothing * Time.deltaTime);
 	}

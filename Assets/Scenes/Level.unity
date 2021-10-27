@@ -336,7 +336,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89c070adf5f8e9142a1db58e4f2eba0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraTarget: {fileID: 150138044}
+  cameraTarget: {fileID: 1453382975}
   cameraFollowSmoothing: 10
   cameraSizeSmoothingIn: 2
   cameraSizeSmoothingOut: 10
@@ -651,6 +651,24 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1203613792}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1453382975 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8339453065574109060, guid: ccf24b40c9aa73046816552c7b387bed,
+    type: 3}
+  m_PrefabInstance: {fileID: 8339453065436635965}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1453382981 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8339453065574109056, guid: ccf24b40c9aa73046816552c7b387bed,
+    type: 3}
+  m_PrefabInstance: {fileID: 8339453065436635965}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1453382975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1240c2dfeb72c742aa6b3e6949b5c8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1454999939
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -673,6 +691,11 @@ PrefabInstance:
       propertyPath: endgameCanvas
       value: 
       objectReference: {fileID: 1011574581}
+    - target: {fileID: 7936059292240044785, guid: 19900e10a71c795448d1cc6d9cba1e7d,
+        type: 3}
+      propertyPath: _playerMovement
+      value: 
+      objectReference: {fileID: 1453382981}
     - target: {fileID: 8129685698144824320, guid: 19900e10a71c795448d1cc6d9cba1e7d,
         type: 3}
       propertyPath: m_RootOrder
