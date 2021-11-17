@@ -8,46 +8,31 @@ public class GameManager : MonoBehaviour
 {
 	public static GameManager instance = null;
 
-	[SerializeField]
-	private PlayerMovement _playerMovement;
-	[SerializeField]
-	private CameraHandler _cameraHandler;
-	[SerializeField]
-	private Text _timeCanvasText;
-	[SerializeField]
-	private Text _gameTimer;
+	[SerializeField] private PlayerMovement _playerMovement;
+	[SerializeField] private PlayerBehavior _playerBehavior;
+	[SerializeField] private CameraHandler _cameraHandler;
+	[SerializeField] private Text _timeCanvasText;
+	[SerializeField] private Text _gameTimer;
+	[SerializeField] private AudioSource _audio;
+	[SerializeField] private SpriteRenderer _endGameScreenSprite;
 
 	[Header("Game state screens")]
-	[SerializeField]
-	private GameObject endgameCanvas = null;
-	[SerializeField]
-	private GameObject finishCanvas = null;
+	[SerializeField] private GameObject endgameCanvas = null;
+	[SerializeField] private GameObject finishCanvas = null;
 
 	[Header("Audio clips")]
-	[SerializeField]
-	private AudioClip damagedSfx;
-	[SerializeField]
-	private AudioClip boostPickupSfx;
-	[SerializeField]
-	private AudioClip impulseSfx;
-	[SerializeField]
-	private AudioClip stoppingSfx;
-	[SerializeField]
-	private AudioClip playerStopSfx;
+	[SerializeField] private AudioClip damagedSfx;
+	[SerializeField] private AudioClip boostPickupSfx;
+	[SerializeField] private AudioClip impulseSfx;
+	[SerializeField] private AudioClip stoppingSfx;
+	[SerializeField] private AudioClip playerStopSfx;
 
 
-	// Not visible in the inspector // 
-
-	// Properties reachable by other classes.
-	// Public
 	public GameObject Player { get; private set; }
 	public Rigidbody2D PlayerRigidBody { get; private set; }
 	public bool PlayerFinished { get; private set; }
 
 	// Private
-	private PlayerBehavior playerBehavior;
-	private SpriteRenderer endGameScreenSprite;
-	private AudioSource audio;
 	private float _timeSpentOnRun;
 
 	/// <summary>
@@ -60,13 +45,22 @@ public class GameManager : MonoBehaviour
 		else if (instance != this)
 			Destroy(gameObject);
 
-		Assert.IsNotNull(endgameCanvas);
-		Assert.IsNotNull(finishCanvas);
-		Assert.IsNotNull(damagedSfx);
 		Assert.IsNotNull(_playerMovement);
+		Assert.IsNotNull(_playerBehavior);
 		Assert.IsNotNull(_cameraHandler);
 		Assert.IsNotNull(_timeCanvasText);
 		Assert.IsNotNull(_gameTimer);
+		Assert.IsNotNull(_audio);
+		Assert.IsNotNull(_endGameScreenSprite);
+
+		Assert.IsNotNull(endgameCanvas);
+		Assert.IsNotNull(finishCanvas);
+
+		Assert.IsNotNull(damagedSfx);
+		Assert.IsNotNull(boostPickupSfx);
+		Assert.IsNotNull(impulseSfx);
+		Assert.IsNotNull(stoppingSfx);
+		Assert.IsNotNull(playerStopSfx);
 	}
 
 	private void Start()
@@ -76,14 +70,11 @@ public class GameManager : MonoBehaviour
 		HideCanvasScreen(endgameCanvas);
 
 		// Setting publics
-		Player = GameObject.FindGameObjectWithTag(Constants.Player);
+		Player = _playerMovement.gameObject;
 		PlayerRigidBody = Player.GetComponent<Rigidbody2D>();
 		
-		// Setting privates
-		playerBehavior = Player.GetComponent<PlayerBehavior>();
-		endGameScreenSprite = Helper.FindComponentInChildWithTag<SpriteRenderer>(Camera.main.gameObject, Constants.EndGame);
-		endGameScreenSprite.gameObject.SetActive(false);
-		audio = GetComponent<AudioSource>();
+		// this need to be set manually at start
+		_endGameScreenSprite.gameObject.SetActive(false);
 	}
 	private void Update()
 	{
@@ -115,26 +106,26 @@ public class GameManager : MonoBehaviour
 	public void PlayerHitGround()
 	{
 		PlayAudioStopping();
-		StartCoroutine(GameEnd());
+		StartCoroutine(GameOver());
 	}
 
 	/// <summary>
 	/// Initiate end game animation and screen.
 	/// </summary>
 	/// <returns></returns>
-	private IEnumerator GameEnd()
+	private IEnumerator GameOver()
 	{
 		// Sets end game sprite to active and alpha 0
-		endGameScreenSprite.color = new Color(endGameScreenSprite.color.r, endGameScreenSprite.color.g, endGameScreenSprite.color.b, 0);
-		endGameScreenSprite.gameObject.SetActive(true);
+		_endGameScreenSprite.color = new Color(_endGameScreenSprite.color.r, _endGameScreenSprite.color.g, _endGameScreenSprite.color.b, 0);
+		_endGameScreenSprite.gameObject.SetActive(true);
 
 		// Player died
 		SetPlayerActive(false);
 
 		// fade in end game sprite
-		while (endGameScreenSprite.color.a < 1)
+		while (_endGameScreenSprite.color.a < 1)
 		{
-			endGameScreenSprite.color = new Color(endGameScreenSprite.color.r, endGameScreenSprite.color.g, endGameScreenSprite.color.b, endGameScreenSprite.color.a + .2f);
+			_endGameScreenSprite.color = new Color(_endGameScreenSprite.color.r, _endGameScreenSprite.color.g, _endGameScreenSprite.color.b, _endGameScreenSprite.color.a + .2f);
 			yield return new WaitForSeconds(0.1f);
 		}
 
@@ -179,7 +170,7 @@ public class GameManager : MonoBehaviour
 		PlayerFinished = true;
 		PlayerRigidBody.gravityScale = 0;
 		PlayerRigidBody.AddForce(Vector2.up*50f, ForceMode2D.Impulse);
-		playerBehavior.DeactivatePlayerCollider();
+		_playerBehavior.DeactivatePlayerCollider();
 		yield return new WaitForSeconds(1f);
 		SetPlayerActive(false);
 
@@ -214,27 +205,27 @@ public class GameManager : MonoBehaviour
 	#region Play audio
 	public void PlayAudioDamage()
 	{
-		audio.PlayOneShot(damagedSfx);
+		_audio.PlayOneShot(damagedSfx);
 	}
 
 	public void PlayAudioBoostPickup()
 	{
-		audio.PlayOneShot(boostPickupSfx);
+		_audio.PlayOneShot(boostPickupSfx);
 	}
 
 	public void PlayAudioImpulse()
 	{
-		audio.PlayOneShot(impulseSfx);
+		_audio.PlayOneShot(impulseSfx);
 	}
 
 	public void PlayAudioStopping()
 	{
-		audio.PlayOneShot(stoppingSfx);
+		_audio.PlayOneShot(stoppingSfx);
 	}
 
 	public void PlayAudioPlayerStop()
 	{
-		audio.PlayOneShot(playerStopSfx);
+		_audio.PlayOneShot(playerStopSfx);
 	}
 	#endregion
 }
