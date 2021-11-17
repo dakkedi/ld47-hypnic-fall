@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
@@ -19,48 +20,29 @@ public class UIManager : MonoBehaviour
 	private void Awake()
 	{
 		_instance = this;
+
+		Assert.IsNotNull(_boostSlider);
 	}
 	#endregion
 
+	// Boost slider component from canvas 
 	[SerializeField]
-	private GameObject _gameplayCanvas;
+	private Slider _boostSlider;
 
-	private Slider _boostSlider = null;
-	private float _sliderValue = 0;
-	private float _defaultSliderValue = 10;
-
-	[SerializeField]
-	private float _currentBoost;
-	public float CurrentBoost
+	/// <summary>
+	/// Set the ui total boost
+	/// </summary>
+	/// <param name="newBoostValue"></param>
+	public void SetCurrentBoostUI(float newBoostValue)
 	{
-		get 
-		{
-			return _currentBoost;
-		}
+		_boostSlider.value = newBoostValue;
 	}
 
-	private void Start()
+	/// <summary>
+	/// Reset the ui boost bar
+	/// </summary>
+	public void ResetCurrentBoostUI()
 	{
-		_boostSlider = _gameplayCanvas.GetComponentInChildren<Slider>();
-		_boostSlider.value = _currentBoost;
+		_boostSlider.value = 0;
 	}
-
-	private void Update()
-	{
-		if (_sliderValue != _currentBoost)
-		{
-			_sliderValue = _currentBoost;
-			UpdateSlider();
-		}
-	}
-
-	private void UpdateSlider()
-	{
-		if (_sliderValue != _defaultSliderValue)
-			_sliderValue += _defaultSliderValue;
-		_boostSlider.value = _sliderValue;
-		Debug.Log(_sliderValue);
-	}
-
-	public void SetCurrentBoost(float newBoostValue) => _currentBoost = newBoostValue;
 }
