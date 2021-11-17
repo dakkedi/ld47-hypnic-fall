@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,6 +12,10 @@ public class GameManager : MonoBehaviour
 	private PlayerMovement _playerMovement;
 	[SerializeField]
 	private CameraHandler _cameraHandler;
+	[SerializeField]
+	private Text _timeCanvasText;
+	[SerializeField]
+	private Text _gameTimer;
 
 	[Header("Game state screens")]
 	[SerializeField]
@@ -43,6 +48,7 @@ public class GameManager : MonoBehaviour
 	private PlayerBehavior playerBehavior;
 	private SpriteRenderer endGameScreenSprite;
 	private AudioSource audio;
+	private float _timeSpentOnRun;
 
 	/// <summary>
 	/// Checks if this class already exists and if the properties are set from the inspector.
@@ -59,6 +65,8 @@ public class GameManager : MonoBehaviour
 		Assert.IsNotNull(damagedSfx);
 		Assert.IsNotNull(_playerMovement);
 		Assert.IsNotNull(_cameraHandler);
+		Assert.IsNotNull(_timeCanvasText);
+		Assert.IsNotNull(_gameTimer);
 	}
 
 	private void Start()
@@ -90,6 +98,13 @@ public class GameManager : MonoBehaviour
 		{
 			SceneManager.LoadScene("Start");
 		}
+
+		UpdateGameTimer();
+	}
+
+	public void UpdateGameTimer()
+	{
+		_gameTimer.text = _playerMovement.TimeSpent.ToString();
 	}
 
 	public float PlayerMaxFallingVelocity => _playerMovement.MaxFallingVelocity;
@@ -156,7 +171,9 @@ public class GameManager : MonoBehaviour
 	/// <returns></returns>
 	public IEnumerator InitiatePlayerFinish()
 	{
-		// Stop camera movement
+		// Stop timer and save it. 
+		_timeSpentOnRun = _playerMovement.TimeSpent;
+		_timeCanvasText.text = _timeSpentOnRun.ToString();
 		_cameraHandler.StopFollowing();
 
 		PlayerFinished = true;

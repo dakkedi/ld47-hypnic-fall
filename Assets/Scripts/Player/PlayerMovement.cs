@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
 	// Privates
 	private Vector2 _movementInput;
 	private bool _started;
+	public float TimeSpent;
 
 	// Publics
 	public Rigidbody2D PlayerRigidBody { get; private set; }
@@ -19,6 +20,8 @@ public class PlayerMovement : MonoBehaviour
 	private void Start()
 	{
 		PlayerRigidBody = gameObject.GetComponent<Rigidbody2D>();
+		PlayerRigidBody.velocity = Vector2.zero;
+		PlayerRigidBody.gravityScale = 0;
 	}
 
 	private void Update()
@@ -30,6 +33,11 @@ public class PlayerMovement : MonoBehaviour
 		{
 			CheckPlayerInitialInput();
 			return;
+		}
+		else
+		{
+			TimeSpent += Time.deltaTime;
+			Debug.Log(TimeSpent);
 		}
 		
 		SetMovementInput();
@@ -45,12 +53,13 @@ public class PlayerMovement : MonoBehaviour
 		if (Input.GetButtonDown("Horizontal"))
 		{
 			_started = true;
+			PlayerRigidBody.gravityScale = 1;
+
 		}
 	}
 
 	private void CapPlayerFallingVelocity()
 	{
-		Debug.Log(PlayerRigidBody.velocity.y);
 		if (PlayerRigidBody.velocity.y < _maxFallingVelocity)
 		{
 			PlayerRigidBody.velocity = new Vector2(PlayerRigidBody.velocity.x, _maxFallingVelocity);
