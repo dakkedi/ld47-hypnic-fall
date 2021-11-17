@@ -24,6 +24,7 @@ public class PlayerMovement : MonoBehaviour
 	private void Update()
 	{
 		if (GameManager.instance.PlayerFinished) return;
+		CapPlayerFallingVelocity();
 
 		if (!_started)
 		{
@@ -32,7 +33,6 @@ public class PlayerMovement : MonoBehaviour
 		}
 		
 		SetMovementInput();
-		CapPlayerFallingVelocity();
 	}
 
 	private void FixedUpdate()
@@ -50,6 +50,7 @@ public class PlayerMovement : MonoBehaviour
 
 	private void CapPlayerFallingVelocity()
 	{
+		Debug.Log(PlayerRigidBody.velocity.y);
 		if (PlayerRigidBody.velocity.y < _maxFallingVelocity)
 		{
 			PlayerRigidBody.velocity = new Vector2(PlayerRigidBody.velocity.x, _maxFallingVelocity);

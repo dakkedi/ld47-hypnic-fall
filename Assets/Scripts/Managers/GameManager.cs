@@ -9,6 +9,8 @@ public class GameManager : MonoBehaviour
 
 	[SerializeField]
 	private PlayerMovement _playerMovement;
+	[SerializeField]
+	private CameraHandler _cameraHandler;
 
 	[Header("Game state screens")]
 	[SerializeField]
@@ -56,6 +58,7 @@ public class GameManager : MonoBehaviour
 		Assert.IsNotNull(finishCanvas);
 		Assert.IsNotNull(damagedSfx);
 		Assert.IsNotNull(_playerMovement);
+		Assert.IsNotNull(_cameraHandler);
 	}
 
 	private void Start()
@@ -153,6 +156,9 @@ public class GameManager : MonoBehaviour
 	/// <returns></returns>
 	public IEnumerator InitiatePlayerFinish()
 	{
+		// Stop camera movement
+		_cameraHandler.StopFollowing();
+
 		PlayerFinished = true;
 		PlayerRigidBody.gravityScale = 0;
 		PlayerRigidBody.AddForce(Vector2.up*50f, ForceMode2D.Impulse);
