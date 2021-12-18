@@ -37,7 +37,6 @@ public class PlayerMovement : MonoBehaviour
 		else
 		{
 			TimeSpent += Time.deltaTime;
-			Debug.Log(TimeSpent);
 		}
 		
 		SetMovementInput();

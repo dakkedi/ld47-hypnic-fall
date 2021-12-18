@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 
@@ -35,7 +36,26 @@ public class UIManager : MonoBehaviour
 	/// <param name="newBoostValue"></param>
 	public void SetCurrentBoostUI(float newBoostValue)
 	{
-		_boostSlider.value = newBoostValue;
+		StartCoroutine(LerpBoostMeter(newBoostValue));
+	}
+
+	private IEnumerator LerpBoostMeter(float endValue)
+	{
+		float timeElapsed = 0;
+		float duration = 0.5f;
+		float startValue = _boostSlider.value;
+
+		while (timeElapsed < duration)
+		{
+			float t = timeElapsed / duration;
+			t = t * t * (3f - 2f * t);
+			_boostSlider.value = Mathf.Lerp(startValue, endValue, t);
+			timeElapsed += Time.deltaTime;
+
+			yield return null;
+		}
+
+		_boostSlider.value = endValue;
 	}
 
 	/// <summary>
@@ -43,6 +63,6 @@ public class UIManager : MonoBehaviour
 	/// </summary>
 	public void ResetCurrentBoostUI()
 	{
-		_boostSlider.value = 0;
+		StartCoroutine(LerpBoostMeter(0f));
 	}
 }

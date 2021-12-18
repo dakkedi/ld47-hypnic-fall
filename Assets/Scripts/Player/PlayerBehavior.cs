@@ -51,7 +51,7 @@ public class PlayerBehavior : MonoBehaviour
 		_audio = gameObject.GetComponent<AudioSource>();
 		_collider = gameObject.GetComponent<CapsuleCollider2D>();
 		_rb = gameObject.GetComponent<Rigidbody2D>();
-		_defaultGravity = _rb.gravityScale;
+		_defaultGravity = 1;
 		_defaultShapeRadius = _playerParticles.shape.radius;
 	}
 
@@ -160,7 +160,7 @@ public class PlayerBehavior : MonoBehaviour
 			// do nothing? 
 			yield return new WaitForSeconds(0.025f);
 		}
-
+		Debug.Log("1");
 		yield return StopAndResetPlayerPhysics();
 	}
 

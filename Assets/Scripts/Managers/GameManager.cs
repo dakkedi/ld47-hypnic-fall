@@ -72,7 +72,7 @@ public class GameManager : MonoBehaviour
 		// Setting publics
 		Player = _playerMovement.gameObject;
 		PlayerRigidBody = Player.GetComponent<Rigidbody2D>();
-		
+
 		// this need to be set manually at start
 		_endGameScreenSprite.gameObject.SetActive(false);
 	}
@@ -91,11 +91,26 @@ public class GameManager : MonoBehaviour
 		}
 
 		UpdateGameTimer();
+		UpdateCameraSize();
+	}
+
+	public void UpdateCameraSize()
+	{
+		// falling between 0 - -10, boosting should go to max size set (10)
+		var playerVelocity = Mathf.Abs(_playerMovement.PlayerRigidBody.velocity.y);
+		//var newCameraSize = (playerVelocity / 3) + _cameraHandler.InitialSize;
+		var currentSize = _cameraHandler.VirtualCamera.m_Lens.OrthographicSize;
+
+		float cameraSizeSmoothingIn = 2f;
+		float cameraSizeSmoothingOut = 6f;
+		var newSize = Mathf.Clamp(playerVelocity, 7f, Mathf.Abs(_playerMovement.MaxFallingVelocity));
+		var smoothing = newSize > currentSize ? cameraSizeSmoothingIn : cameraSizeSmoothingOut; // have a faster smoothing if camera zooms in
+		_cameraHandler.VirtualCamera.m_Lens.OrthographicSize = Mathf.Lerp(currentSize, newSize, smoothing * Time.deltaTime);
 	}
 
 	public void UpdateGameTimer()
 	{
-		_gameTimer.text = _playerMovement.TimeSpent.ToString();
+		_gameTimer.text = _playerMovement.TimeSpent.ToString("0.0");
 	}
 
 	public float PlayerMaxFallingVelocity => _playerMovement.MaxFallingVelocity;
@@ -169,7 +184,7 @@ public class GameManager : MonoBehaviour
 
 		PlayerFinished = true;
 		PlayerRigidBody.gravityScale = 0;
-		PlayerRigidBody.AddForce(Vector2.up*50f, ForceMode2D.Impulse);
+		PlayerRigidBody.AddForce(Vector2.up * 50f, ForceMode2D.Impulse);
 		_playerBehavior.DeactivatePlayerCollider();
 		yield return new WaitForSeconds(1f);
 		SetPlayerActive(false);
